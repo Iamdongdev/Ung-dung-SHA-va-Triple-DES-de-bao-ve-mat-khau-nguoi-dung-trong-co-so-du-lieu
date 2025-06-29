@@ -230,18 +230,18 @@ def register():
 
         # Kiểm tra nếu mật khẩu và nhập lại mật khẩu không khớp
         if password != confirm_password:
-            return render_template('register.html', error="Mật khẩu không khớp!")
+            return render_template('client/register.html', error="Mật khẩu không khớp!")
 
         # Đăng ký tài khoản
         user_data = register_account(username, password)
 
         # Kiểm tra nếu username đã tồn tại
         if user_data is None:
-            return render_template('register.html', error="Tên đăng nhập đã tồn tại!")
+            return render_template('client/register.html', error="Tên đăng nhập đã tồn tại!")
 
         # Truyền thông tin tài khoản vào trang thành công
-        return render_template('register_success.html', user_data=user_data)
-    return render_template('register.html')
+        return render_template('client/register_success.html', user_data=user_data)
+    return render_template('client/register.html')
 
 # Trang thành công khi đăng ký
 @app.route('/register_success')
@@ -259,20 +259,20 @@ def login():
 
         if result is None:
             # Nếu không tìm thấy người dùng, trả về lỗi
-            return render_template('login.html', error="Tên đăng nhập không tồn tại!")
+            return render_template('client/login.html', error="Tên đăng nhập không tồn tại!")
 
         if "Tài khoản bị khóa" in result:
             # Nếu tài khoản bị khóa
-            return render_template('login.html', error=result)
+            return render_template('client/login.html', error=result)
         
         if "Đăng nhập thành công" in result:
             # Nếu đăng nhập thành công
-            return render_template('welcome.html', username=username)
+            return render_template('client/welcome.html', username=username)
         
         # Nếu kết quả không phải là các trường hợp trên, hiển thị lỗi
-        return render_template('login.html', error=result)
+        return render_template('client/login.html', error=result)
 
-    return render_template('login.html')
+    return render_template('client/login.html')
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -316,7 +316,7 @@ def change_password():
     cursor.close()
     conn.close()
 
-    return render_template('welcome.html', username=username, message="Đổi mật khẩu thành công!")
+    return render_template('client/welcome.html', username=username, message="Đổi mật khẩu thành công!")
 def admin_login_account(username, password):
     if not check_username_exists(username):
         return "Tên đăng nhập không tồn tại!"
@@ -347,7 +347,7 @@ def admin_login_account(username, password):
 @app.route('/welcome')
 def welcome():
     username = request.args.get('username')
-    return render_template('welcome.html', username=username, message="Đổi mật khẩu thành công!")
+    return render_template('client/welcome.html', username=username, message="Đổi mật khẩu thành công!")
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
     # Nếu đã đăng nhập và là admin thì chuyển hướng tới dashboard
@@ -363,15 +363,15 @@ def admin_login():
         if "Đăng nhập thành công" in result:
             return redirect(url_for('admin_dashboard'))  # Chuyển hướng đến trang dashboard sau khi đăng nhập thành công
         else:
-            return render_template('admin.html', error=result)  # Hiển thị thông báo lỗi
+            return render_template('admin/admin.html', error=result)  # Hiển thị thông báo lỗi
 
-    return render_template('admin.html')  # Hiển thị form đăng nhập admin
+    return render_template('admin/admin.html')  # Hiển thị form đăng nhập admin
 
 # Trang quản trị (admin dashboard)
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if not is_admin():
-        return render_template('admin.html', error="Bạn không có quyền truy cập trang quản trị!")
+        return render_template('admin/admin.html', error="Bạn không có quyền truy cập trang quản trị!")
     message = request.args.get('message')
     conn = connect_to_db()
     cursor = conn.cursor()
@@ -381,7 +381,7 @@ def admin_dashboard():
     logs = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('admin_dashboard.html', users=users, logs=logs, message=message)
+    return render_template('admin/admin_dashboard.html', users=users, logs=logs, message=message)
 
 @app.route('/admin/delete/<username>', methods=['POST'])
 def delete_user(username):
@@ -413,6 +413,10 @@ def unlock_user(username):
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@app.route('/')
+def index():
+    return render_template('client/index.html')
 
 # Chạy ứng dụng Flask
 if __name__ == '__main__':
